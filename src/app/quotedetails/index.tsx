@@ -117,7 +117,7 @@ export default function ViewQuote() {
         if (!quote) return
 
         try {
-            const { uri } = await Print.printToFileAsync({ html: buildQuoteHtml(quote) })
+            const { uri } = await Print.printToFileAsync({ html: await buildQuoteHtml(quote) })
 
             const formattedDate = formatarData(quote.createdAt, true)
             const fileName = `Orcamento-${quote.client}-${formattedDate}.pdf`

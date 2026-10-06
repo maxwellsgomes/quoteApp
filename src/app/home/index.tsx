@@ -23,12 +23,17 @@ export default function Home() {
     const [statusFilter, setStatusFilter] = useState<QuoteStatus[]>([])
     const [quotes, setQuotes] = useState<QuoteDoc[]>([])
     const [orderBy, setOrderBy] = useState<OrderBy>(OrderBy.LATEST)
+    const [searchText, setSearchText] = useState("")
 
     const [draftStatus, setDraftStatus] = useState<QuoteStatus[]>([])
     const [draftOrder, setDraftOrder] = useState<OrderBy>(OrderBy.LATEST)
 
     function newQuote() {
         router.navigate("./newquote")
+    }
+
+    function openProfile() {
+        router.navigate("/profile")
     }
 
     function handleCancel() {
@@ -77,7 +82,20 @@ export default function Home() {
     const draftQuotes = quotes.filter((q) => q.status === QuoteStatus.DRAFT).length
 
     const visibleQuotes = quotes
-        .filter(q => statusFilter.length === 0 || statusFilter.includes(q.status))
+        .filter(q => {
+
+            //Filtro por status
+            const matchesStatus = statusFilter.length === 0 || statusFilter.includes(q.status)
+
+            //Filtro por Título ou Cliente
+            const search = searchText.trim().toLowerCase()
+            const matchesSearch =
+                search === "" ||
+                (q.title?.toLowerCase().includes(search) ?? false) ||
+                (q.client?.toLowerCase().includes(search) ?? false)
+
+            return matchesStatus && matchesSearch
+        })
         .sort((a, b) => {
             switch (orderBy) {
                 case OrderBy.OLDEST:
@@ -104,16 +122,38 @@ export default function Home() {
             >
 
                 <View style={styles.header}>
-                    <View style={styles.textContainer} >
+                    <View style={styles.textContainer}>
                         <Text style={styles.title}>Orçamentos</Text>
-                        <Text style={styles.subtitle}>Você tem {draftQuotes} {draftQuotes > 1 ? "itens " : "item "}em rascunho</Text>
+                        <Text style={styles.subtitle}>
+                            Você tem {draftQuotes} {draftQuotes > 1 ? "itens " : "item "}em rascunho
+                        </Text>
                     </View>
-                    <Button iconName="add" variant="primary" title="Novo" onPress={newQuote} />
+
+                    {/* Agrupamento dos botões de ação */}
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                        <Button
+                            iconName="person"
+                            variant="icon"
+                            onPress={openProfile}
+                        />
+                        <Button
+                            iconName="add"
+                            variant="primary"
+                            title="Novo"
+                            onPress={newQuote}
+                        />
+                    </View>
                 </View>
 
                 <View style={styles.content}>
                     <View style={styles.form}>
-                        <Input containerStyle={{ flex: 1 }} iconName="search" placeholder="Titulo ou Cliente" />
+                        <Input
+                            containerStyle={{ flex: 1 }}
+                            iconName="search"
+                            placeholder="Titulo ou Cliente"
+                            value={searchText}
+                            onChangeText={setSearchText}
+                        />
                         <Button iconName="tune" variant="icon" onPress={openFilter} />
                     </View>
 
